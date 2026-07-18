@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <h1 class="text-3xl font-bold mb-2">💼 Internship Recommendations</h1>
+    <p class="text-gray-400 mb-8">AI-matched internships based on your resume.</p>
+
+    {% if not resume %}
+    <!-- No resume uploaded -->
+    <div class="bg-gray-900 border border-yellow-600 rounded-2xl p-8 text-center">
+        <p class="text-4xl mb-3">📄</p>
+        <p class="text-lg font-semibold mb-2">No resume found</p>
+        <p class="text-gray-400 mb-4">Upload your resume first to get personalized internship recommendations.</p>
+        <a href="/dashboard/resume/" class="bg-indigo-600 hover:bg-indigo-500 px-6 py-3 rounded-lg transition">
+            Upload Resume →
+        </a>
+    </div>
+
+    {% else %}
+    <!-- Generate Form -->
+    <div class="bg-gray-900 border border-gray-700 rounded-2xl p-6 mb-8">
+        <form method="POST" class="flex gap-4 items-end flex-wrap">
+            {% csrf_token %}
+            <div class="flex-1 min-w-60">
+                <label class="block text-sm text-gray-400 mb-1">Target Role (optional)</label>
+                <input type="text" name="target_role" placeholder="e.g. Backend Developer, ML Engineer, Data Analyst"
+                    class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-indigo-500">
+            </div>
+            <button type="submit"
+                class="bg-indigo-600 hover:bg-indigo-500 px-6 py-3 rounded-lg font-semibold transition whitespace-nowrap">
+                🔍 Get Recommendations
+            </button>
+        </form>
+        {% if last_reco %}
+        <p class="text-gray-500 text-xs mt-3">Last generated: {{ last_reco.generated_at|date:"M d, Y - h:i A" }}</p>
+        {% endif %}
+    </div>
+
+    <!-- Recommendations -->
+    {% if recommendations %}
+    <div class="space-y-5">
+        {% for role in recommendations %}
+        <div class="bg-gray-900 border border-gray-800 rounded-2xl p-6 hover:border-indigo-500 transition">
+            <div class="flex justify-between items-start mb-4 flex-wrap gap-3">
+                <div>
+                    <h2 class="text-xl font-bold">{{ role.title }}</h2>
+                    <p class="text-gray-400 text-sm mt-1">{{ role.company_type }}</p>
+                </div>
+                <!-- Match % badge -->
+                <div class="text-center">
+                    <div class="text-3xl font-bold
+                        {% if role.match_percent >= 75 %}text-green-400
+                        {% elif role.match_percent >= 50 %}text-yellow-400
+                        {% else %}text-red-400{% endif %}">
+                        {{ role.match_percent }}%
+                    </div>
+                    <p class="text-gray-500 text-xs">match</p>
+                </div>
+            </div>
+
+            <!-- Match bar -->
+            <div class="bg-gray-800 rounded-full h-2 mb-5">
+                <div class="h-2 rounded-full bg-indigo-500" style="width: {{ role.match_percent }}%"></div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <!-- Required Skills -->
+                <div>
+                    <p class="text-sm text-gray-400 mb-2">✅ Required Skills</p>
+                    <div class="flex flex-wrap gap-2">
+                        {% for skill in role.required_skills %}
+                        <span class="bg-indigo-900 text-indigo-300 px-3 py-1 rounded-full text-xs">
+                            {{ skill }}
+                        </span>
+                        {% endfor %}
+                    </div>
+                </div>
+                <!-- Missing Skills -->
+                <div>
+                    <p class="text-sm text-gray-400 mb-2">⚠️ Skills to Learn</p>
+                    <div class="flex flex-wrap gap-2">
+                        {% for skill in role.missing_skills %}
+                        <span class="bg-red-900 text-red-300 px-3 py-1 rounded-full text-xs">
+                            {{ skill }}
+                        </span>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Apply tip -->
+            <div class="bg-gray-800 rounded-xl p-4 mb-4">
+                <p class="text-sm text-yellow-400 font-semibold mb-1">💡 Apply Tip</p>
+                <p class="text-gray-300 text-sm">{{ role.apply_tip }}</p>
+            </div>
+
+            <!-- Platforms -->
+            <div class="flex items-center gap-3 flex-wrap">
+                <p class="text-sm text-gray-400">Apply on:</p>
+                {% for platform in role.platforms %}
+                <a href="{{ platform.url }}" target="_blank"
+                    class="bg-indigo-800 hover:bg-indigo-700 border border-indigo-600 text-indigo-200 px-3 py-1 rounded-full text-xs transition flex items-center gap-1">
+                    🔗 {{ platform.name }}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Next step -->
+    <div
+        class="mt-8 bg-gray-900 border border-gray-700 rounded-2xl p-6 flex justify-between items-center flex-wrap gap-4">
+        <div>
+            <p class="font-semibold">Next: Find your skill gaps</p>
+            <p class="text-gray-400 text-sm">See exactly what skills you need to land these roles</p>
+        </div>
+        <a href="/skills/" class="bg-indigo-600 hover:bg-indigo-500 px-6 py-3 rounded-lg transition">
+            🧠 Skill Gap Analysis →
+        </a>
+    </div>
+    {% endif %}
+    {% endif %}
+</div>
+{% endblock %}
