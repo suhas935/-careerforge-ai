@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% block content %}
+<div>
+    <h1 class="text-3xl font-bold mb-2">Welcome back, {{ user.username }} 👋</h1>
+    <p class="text-gray-400 mb-10">Here's your career progress at a glance.</p>
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
+        <div class="bg-gray-900 rounded-2xl p-6 border border-gray-800">
+            <p class="text-gray-400 text-sm mb-1">Placement Score</p>
+            <p class="text-4xl font-bold text-indigo-400">--</p>
+            <p class="text-gray-500 text-xs mt-1">Upload resume to calculate</p>
+        </div>
+        <div class="bg-gray-900 rounded-2xl p-6 border border-gray-800">
+            <p class="text-gray-400 text-sm mb-1">Skills Matched</p>
+            <p class="text-4xl font-bold text-green-400">--</p>
+            <p class="text-gray-500 text-xs mt-1">Vs your target role</p>
+        </div>
+        <div class="bg-gray-900 rounded-2xl p-6 border border-gray-800">
+            <p class="text-gray-400 text-sm mb-1">Applications</p>
+            <p class="text-4xl font-bold text-yellow-400">0</p>
+            <p class="text-gray-500 text-xs mt-1">Tracked so far</p>
+        </div>
+        <div class="bg-gray-900 rounded-2xl p-6 border border-gray-800">
+            <p class="text-gray-400 text-sm mb-1">Roadmap Progress</p>
+            <p class="text-4xl font-bold text-pink-400">0%</p>
+            <p class="text-gray-500 text-xs mt-1">Learning plan</p>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <h2 class="text-xl font-semibold mb-4">Quick Actions</h2>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <a href="/dashboard/resume/" class="bg-indigo-600 hover:bg-indigo-500 rounded-2xl p-6 transition">
+            <p class="text-lg font-semibold">📄 Analyze Resume</p>
+            <p class="text-indigo-200 text-sm mt-1">Upload and get AI feedback</p>
+        </a>
+        <a href="/internships/" class="bg-gray-900 hover:bg-gray-800 border border-gray-700 rounded-2xl p-6 transition">
+            <p class="text-lg font-semibold">💼 Find Internships</p>
+            <p class="text-gray-400 text-sm mt-1">AI-matched to your profile</p>
+        </a>
+        <a href="/interview/" class="bg-gray-900 hover:bg-gray-800 border border-gray-700 rounded-2xl p-6 transition">
+            <p class="text-lg font-semibold">🎯 Practice Interview</p>
+            <p class="text-gray-400 text-sm mt-1">Role-specific questions</p>
+        </a>
+    </div>
+</div>
+{% endblock %}

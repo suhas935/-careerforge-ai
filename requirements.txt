@@ -1,0 +1,12 @@
+django
+djangorestframework
+psycopg2-binary
+python-dotenv
+anthropic
+cloudinary
+django-cloudinary-storage
+Pillow
+PyPDF2
+whitenoise
+gunicorn
+dj-database-url

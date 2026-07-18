@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="max-w-3xl mx-auto">
+    <div class="flex justify-between items-center mb-8">
+        <div>
+            <h1 class="text-3xl font-bold">📄 Resume Analysis</h1>
+            <p class="text-gray-400 mt-1">Analyzed on {{ resume.uploaded_at|date:"M d, Y" }}</p>
+        </div>
+        <a href="{% url 'resume_upload' %}"
+            class="bg-gray-800 hover:bg-gray-700 border border-gray-600 px-4 py-2 rounded-lg text-sm transition">
+            ↑ Upload New
+        </a>
+    </div>
+
+    <!-- Score -->
+    <div class="bg-gray-900 border border-gray-800 rounded-2xl p-8 mb-6 text-center">
+        <p class="text-gray-400 mb-2">Resume Score</p>
+        <p class="text-7xl font-bold {{ score_color }}">{{ resume.score }}</p>
+        <p class="text-gray-500 mt-2">out of 100</p>
+        <!-- Score bar -->
+        <div class="bg-gray-800 rounded-full h-3 mt-6">
+            <div class="h-3 rounded-full bg-indigo-500 transition-all" style="width: {{ resume.score }}%"></div>
+        </div>
+    </div>
+
+    <!-- Strengths & Weaknesses -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <div class="bg-gray-900 border border-gray-800 rounded-2xl p-6">
+            <h2 class="text-lg font-semibold text-green-400 mb-4">✅ Strengths</h2>
+            <ul class="space-y-2">
+                {% for strength in strengths %}
+                <li class="flex items-start gap-2 text-gray-300">
+                    <span class="text-green-400 mt-1">•</span> {{ strength }}
+                </li>
+                {% empty %}
+                <li class="text-gray-500">No strengths detected.</li>
+                {% endfor %}
+            </ul>
+        </div>
+        <div class="bg-gray-900 border border-gray-800 rounded-2xl p-6">
+            <h2 class="text-lg font-semibold text-red-400 mb-4">⚠️ Weaknesses</h2>
+            <ul class="space-y-2">
+                {% for weakness in weaknesses %}
+                <li class="flex items-start gap-2 text-gray-300">
+                    <span class="text-red-400 mt-1">•</span> {{ weakness }}
+                </li>
+                {% empty %}
+                <li class="text-gray-500">No weaknesses detected.</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <!-- Detailed Feedback -->
+    <div class="bg-gray-900 border border-gray-800 rounded-2xl p-6">
+        <h2 class="text-lg font-semibold text-indigo-400 mb-4">💡 Detailed Feedback</h2>
+        <div class="text-gray-300 leading-relaxed whitespace-pre-line">
+            {{ resume.ai_feedback }}
+        </div>
+    </div>
+
+    <!-- Next Steps -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+        <a href="/skills/"
+            class="bg-gray-900 hover:bg-gray-800 border border-gray-700 rounded-2xl p-5 transition text-center">
+            <p class="text-2xl mb-1">🧠</p>
+            <p class="font-semibold">Skill Gap Analysis</p>
+            <p class="text-gray-400 text-sm">See what you're missing</p>
+        </a>
+        <a href="/internships/"
+            class="bg-gray-900 hover:bg-gray-800 border border-gray-700 rounded-2xl p-5 transition text-center">
+            <p class="text-2xl mb-1">💼</p>
+            <p class="font-semibold">Find Internships</p>
+            <p class="text-gray-400 text-sm">Matched to your profile</p>
+        </a>
+        <a href="/roadmap/"
+            class="bg-gray-900 hover:bg-gray-800 border border-gray-700 rounded-2xl p-5 transition text-center">
+            <p class="text-2xl mb-1">🗺️</p>
+            <p class="font-semibold">Learning Roadmap</p>
+            <p class="text-gray-400 text-sm">Week-by-week plan</p>
+        </a>
+    </div>
+</div>
+{% endblock %}
