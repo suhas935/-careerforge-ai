@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <h1 class="text-3xl font-bold mb-2">🧠 Skill Gap Analysis</h1>
+    <p class="text-gray-400 mb-8">Find exactly what skills you need for your target role.</p>
+
+    {% if not resume %}
+    <div class="bg-gray-900 border border-yellow-600 rounded-2xl p-8 text-center">
+        <p class="text-4xl mb-3">📄</p>
+        <p class="text-lg font-semibold mb-2">No resume found</p>
+        <p class="text-gray-400 mb-4">Upload your resume first to analyze skill gaps.</p>
+        <a href="/dashboard/resume/" class="bg-indigo-600 hover:bg-indigo-500 px-6 py-3 rounded-lg transition">
+            Upload Resume →
+        </a>
+    </div>
+
+    {% else %}
+    <!-- Form -->
+    <div class="bg-gray-900 border border-gray-700 rounded-2xl p-6 mb-8">
+        <form method="POST" class="flex gap-4 items-end flex-wrap">
+            {% csrf_token %}
+            <div class="flex-1 min-w-60">
+                <label class="block text-sm text-gray-400 mb-1">Target Role</label>
+                <input type="text" name="target_role"
+                    placeholder="e.g. Backend Developer, Data Scientist, DevOps Engineer"
+                    value="{% if prefill_role %}{{ prefill_role }}{% elif last_analysis %}{{ last_analysis.target_role }}{% endif %}"
+                    class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-indigo-500">
+            </div>
+            <button type="submit"
+                class="bg-indigo-600 hover:bg-indigo-500 px-6 py-3 rounded-lg font-semibold transition whitespace-nowrap">
+                🔍 Analyze Gap
+            </button>
+        </form>
+        {% if last_analysis %}
+        <p class="text-gray-500 text-xs mt-3">Last analyzed: {{ last_analysis.generated_at|date:"M d, Y - h:i A" }}</p>
+        {% endif %}
+    </div>
+
+    {% if analysis %}
+    <!-- Readiness Score -->
+    <div class="bg-gray-900 border border-gray-800 rounded-2xl p-8 mb-6 text-center">
+    <p class="text-gray-400 mb-2">Readiness for <span class="text-white font-semibold">{{ analysis.target_role }}</span></p>
+        <p class="text-7xl font-bold
+            {% if analysis.overall_readiness >= 75 %}text-green-400
+            {% elif analysis.overall_readiness >= 50 %}text-yellow-400
+            {% else %}text-red-400{% endif %}">
+            {{ analysis.overall_readiness }}%
+        </p>
+        <div class="bg-gray-800 rounded-full h-3 mt-6">
+            <div class="h-3 rounded-full transition-all
+                {% if analysis.overall_readiness >= 75 %}bg-green-500
+                {% elif analysis.overall_readiness >= 50 %}bg-yellow-500
+                {% else %}bg-red-500{% endif %}" style="width: {{ analysis.overall_readiness }}%"></div>
+        </div>
+    </div>
+
+    <!-- Current vs Missing Skills -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <div class="bg-gray-900 border border-gray-800 rounded-2xl p-6">
+            <h2 class="text-lg font-semibold text-green-400 mb-4">✅ Skills You Have</h2>
+            <div class="flex flex-wrap gap-2">
+                {% for skill in analysis.current_skills %}
+                <span class="bg-green-900 text-green-300 px-3 py-1 rounded-full text-sm">{{ skill }}</span>
+                {% empty %}
+                <p class="text-gray-500">No matching skills found.</p>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="bg-gray-900 border border-gray-800 rounded-2xl p-6">
+            <h2 class="text-lg font-semibold text-red-400 mb-4">❌ Skills You Need</h2>
+            <div class="flex flex-wrap gap-2">
+                {% for skill in analysis.missing_skills %}
+                <span class="bg-red-900 text-red-300 px-3 py-1 rounded-full text-sm">{{ skill }}</span>
+                {% empty %}
+                <p class="text-gray-500">No missing skills detected.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Learning Recommendations -->
+    <h2 class="text-xl font-semibold mb-4">📚 What to Learn Next</h2>
+    <div class="space-y-4">
+        {% for rec in analysis.recommendations %}
+        <div class="bg-gray-900 border border-gray-800 rounded-2xl p-6">
+            <div class="flex justify-between items-start mb-3 flex-wrap gap-2">
+                <h3 class="text-lg font-bold">{{ rec.skill }}</h3>
+                <span class="px-3 py-1 rounded-full text-xs font-semibold
+                    {% if rec.priority == 'High' %}bg-red-900 text-red-300
+                    {% elif rec.priority == 'Medium' %}bg-yellow-900 text-yellow-300
+                    {% else %}bg-green-900 text-green-300{% endif %}">
+                    {{ rec.priority }} Priority
+                </span>
+            </div>
+            <p class="text-gray-300 text-sm mb-3">{{ rec.reason }}</p>
+            <div class="flex items-center justify-between flex-wrap gap-3">
+                <div class="flex items-center gap-2">
+                    <span class="text-gray-500 text-xs">⏱ {{ rec.time_to_learn }}</span>
+                </div>
+                <a href="{{ rec.resource.url }}" target="_blank"
+                    class="bg-indigo-800 hover:bg-indigo-700 text-indigo-200 px-4 py-2 rounded-lg text-sm transition">
+                    📖 {{ rec.resource.name }} →
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Next Step -->
+    <div
+        class="mt-8 bg-gray-900 border border-gray-700 rounded-2xl p-6 flex justify-between items-center flex-wrap gap-4">
+        <div>
+            <p class="font-semibold">Next: Get your learning roadmap</p>
+            <p class="text-gray-400 text-sm">Week-by-week plan to close these gaps</p>
+        </div>
+        <a href="/roadmap/" class="bg-indigo-600 hover:bg-indigo-500 px-6 py-3 rounded-lg transition">
+            🗺️ Learning Roadmap →
+        </a>
+    </div>
+    {% endif %}
+    {% endif %}
+</div>
+{% endblock %}
