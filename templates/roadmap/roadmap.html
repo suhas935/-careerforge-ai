@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <h1 class="text-3xl font-bold mb-2">🗺️ Learning Roadmap</h1>
+    <p class="text-gray-400 mb-8">Your personalized week-by-week plan to land your target role.</p>
+
+    {% if not resume %}
+    <div class="bg-gray-900 border border-yellow-600 rounded-2xl p-8 text-center">
+        <p class="text-4xl mb-3">📄</p>
+        <p class="text-lg font-semibold mb-2">No resume found</p>
+        <p class="text-gray-400 mb-4">Upload your resume first to generate a personalized roadmap.</p>
+        <a href="/dashboard/resume/" class="bg-indigo-600 hover:bg-indigo-500 px-6 py-3 rounded-lg transition">
+            Upload Resume →
+        </a>
+    </div>
+
+    {% else %}
+    <!-- Form -->
+    <div class="bg-gray-900 border border-gray-700 rounded-2xl p-6 mb-8">
+        <form method="POST" class="flex gap-4 items-end flex-wrap">
+            {% csrf_token %}
+            <div class="flex-1 min-w-60">
+                <label class="block text-sm text-gray-400 mb-1">Target Role</label>
+                <input type="text" name="target_role" placeholder="e.g. Backend Developer, Data Scientist"
+                    value="{% if prefill_role %}{{ prefill_role }}{% elif last_roadmap %}{{ last_roadmap.target_role }}{% endif %}"
+                    class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-indigo-500">
+            </div>
+            <div class="w-36">
+                <label class="block text-sm text-gray-400 mb-1">Duration</label>
+                <select name="duration_weeks"
+                    class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-indigo-500">
+                    <option value="4">4 Weeks</option>
+                    <option value="8" selected>8 Weeks</option>
+                    <option value="12">12 Weeks</option>
+                    <option value="16">16 Weeks</option>
+                </select>
+            </div>
+            <button type="submit"
+                class="bg-indigo-600 hover:bg-indigo-500 px-6 py-3 rounded-lg font-semibold transition whitespace-nowrap">
+                🗺️ Generate Roadmap
+            </button>
+        </form>
+        {% if last_roadmap %}
+        <p class="text-gray-500 text-xs mt-3">Last generated: {{ last_roadmap.generated_at|date:"M d, Y - h:i A" }}</p>
+        {% endif %}
+    </div>
+
+    {% if roadmap %}
+    <!-- Roadmap Header -->
+    <div
+        class="bg-gray-900 border border-gray-800 rounded-2xl p-6 mb-6 flex justify-between items-center flex-wrap gap-4">
+        <div>
+            <h2 class="text-xl font-bold">{{ roadmap.target_role }}</h2>
+            <p class="text-gray-400 text-sm mt-1">{{ roadmap.duration_weeks }}-week learning plan</p>
+        </div>
+        <div class="text-center">
+            <p class="text-3xl font-bold text-indigo-400">{{ roadmap.duration_weeks }}</p>
+            <p class="text-gray-500 text-xs">weeks</p>
+        </div>
+    </div>
+
+    <!-- Week by Week -->
+    <div class="space-y-4">
+        {% for week in roadmap.weeks %}
+        <div class="bg-gray-900 border border-gray-800 rounded-2xl p-6 hover:border-indigo-500 transition">
+            <div class="flex items-start gap-4">
+                <!-- Week number -->
+                <div class="bg-indigo-600 rounded-xl w-12 h-12 flex items-center justify-center flex-shrink-0">
+                    <span class="font-bold text-sm">W{{ week.week }}</span>
+                </div>
+                <div class="flex-1">
+                    <div class="flex justify-between items-start flex-wrap gap-2 mb-2">
+                        <h3 class="text-lg font-bold">{{ week.title }}</h3>
+                        <a href="{{ week.resource.url }}" target="_blank"
+                            class="bg-indigo-800 hover:bg-indigo-700 text-indigo-200 px-3 py-1 rounded-lg text-xs transition">
+                            📖 {{ week.resource.name }} →
+                        </a>
+                    </div>
+
+                    <p class="text-gray-400 text-sm mb-3">🎯 {{ week.goal }}</p>
+
+                    <!-- Tasks -->
+                    <div class="mb-3">
+                        <p class="text-xs text-gray-500 mb-2">DAILY TASKS</p>
+                        <ul class="space-y-1">
+                            {% for task in week.tasks %}
+                            <li class="flex items-start gap-2 text-sm text-gray-300">
+                                <span class="text-indigo-400 mt-0.5">→</span> {{ task }}
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+
+                    <!-- Milestone -->
+                    <div class="bg-gray-800 rounded-xl px-4 py-3 flex items-center gap-2">
+                        <span class="text-yellow-400">🏆</span>
+                        <p class="text-sm text-gray-300"><span class="text-yellow-400 font-semibold">Milestone:</span>
+                            {{ week.milestone }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Next Step -->
+    <div
+        class="mt-8 bg-gray-900 border border-gray-700 rounded-2xl p-6 flex justify-between items-center flex-wrap gap-4">
+        <div>
+            <p class="font-semibold">Next: Practice for interviews</p>
+            <p class="text-gray-400 text-sm">Get role-specific interview questions</p>
+        </div>
+        <a href="/interview/?role={{ roadmap.target_role }}"
+            class="bg-indigo-600 hover:bg-indigo-500 px-6 py-3 rounded-lg transition">
+            🎯 Interview Prep →
+        </a>
+    </div>
+    {% endif %}
+    {% endif %}
+</div>
+{% endblock %}
