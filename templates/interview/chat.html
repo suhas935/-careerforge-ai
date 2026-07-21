@@ -1,0 +1,182 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <div class="flex justify-between items-center mb-6 flex-wrap gap-3">
+        <div>
+            <h1 class="text-3xl font-bold">🤖 AI Interview Coach</h1>
+            <p class="text-gray-400 mt-1">Practice with a mock interviewer or ask anything.</p>
+        </div>
+        <a href="/interview/"
+            class="bg-gray-800 hover:bg-gray-700 border border-gray-600 px-4 py-2 rounded-lg text-sm transition">
+            ← Back to Questions
+        </a>
+    </div>
+
+    <!-- Mode Selector -->
+    <div class="grid grid-cols-2 gap-4 mb-6">
+        <button onclick="setMode('mock')" id="btn-mock"
+            class="mode-btn bg-indigo-600 border-2 border-indigo-400 rounded-2xl p-5 text-left transition">
+            <p class="text-xl mb-1">🎤</p>
+            <p class="font-bold">Mock Interview</p>
+            <p class="text-indigo-200 text-sm mt-1">AI interviews you question by question with feedback</p>
+        </button>
+        <button onclick="setMode('qa')" id="btn-qa"
+            class="mode-btn bg-gray-900 border-2 border-gray-700 rounded-2xl p-5 text-left transition hover:border-indigo-500">
+            <p class="text-xl mb-1">💬</p>
+            <p class="font-bold">Q&A Assistant</p>
+            <p class="text-gray-400 text-sm mt-1">Ask anything about interview prep</p>
+        </button>
+    </div>
+
+    <!-- Role input (mock mode only) -->
+    <div id="role-input" class="bg-gray-900 border border-gray-700 rounded-2xl p-4 mb-4 flex gap-3 items-end">
+        <div class="flex-1">
+            <label class="block text-sm text-gray-400 mb-1">Target Role for Mock Interview</label>
+            <input type="text" id="role-field"
+                value="{% if last_session %}{{ last_session.target_role }}{% else %}Backend Developer{% endif %}"
+                class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-indigo-500 text-sm">
+        </div>
+        <button onclick="startMock()"
+            class="bg-indigo-600 hover:bg-indigo-500 px-4 py-2 rounded-lg text-sm font-semibold transition whitespace-nowrap">
+            Start Interview
+        </button>
+    </div>
+
+    <!-- Chat Window -->
+    <div class="bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden">
+        <!-- Messages -->
+        <div id="chat-messages" class="h-96 overflow-y-auto p-6 space-y-4">
+            <div class="flex gap-3">
+                <div class="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center flex-shrink-0 text-sm">
+                    🤖</div>
+                <div class="bg-gray-800 rounded-2xl rounded-tl-none px-4 py-3 max-w-lg">
+                    <p class="text-gray-300 text-sm">Hi! I'm your AI Interview Coach. Choose a mode above to get
+                        started. In <strong>Mock Interview</strong> mode I'll interview you for your target role. In
+                        <strong>Q&A</strong> mode ask me anything about interview prep!</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Input -->
+        <div class="border-t border-gray-800 p-4 flex gap-3">
+            <input type="text" id="chat-input" placeholder="Type your message or answer..."
+                class="flex-1 bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 text-sm"
+                onkeypress="if(event.key==='Enter') sendMessage()">
+            <button onclick="sendMessage()"
+                class="bg-indigo-600 hover:bg-indigo-500 px-5 py-3 rounded-xl transition font-semibold text-sm">
+                Send
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentMode = 'mock';
+    let chatHistory = [];
+    let isLoading = false;
+
+    function setMode(mode) {
+        currentMode = mode;
+        document.getElementById('btn-mock').className = mode === 'mock'
+            ? 'mode-btn bg-indigo-600 border-2 border-indigo-400 rounded-2xl p-5 text-left transition'
+            : 'mode-btn bg-gray-900 border-2 border-gray-700 rounded-2xl p-5 text-left transition hover:border-indigo-500';
+        document.getElementById('btn-qa').className = mode === 'qa'
+            ? 'mode-btn bg-indigo-600 border-2 border-indigo-400 rounded-2xl p-5 text-left transition'
+            : 'mode-btn bg-gray-900 border-2 border-gray-700 rounded-2xl p-5 text-left transition hover:border-indigo-500';
+        document.getElementById('role-input').style.display = mode === 'mock' ? 'flex' : 'none';
+
+        if (mode === 'qa') {
+            chatHistory = [];
+            clearChat();
+            appendMessage('bot', "Ask me anything about interview prep — coding questions, system design, HR tips, salary negotiation, or how to answer specific questions!");
+        }
+    }
+
+    function startMock() {
+        chatHistory = [];
+        clearChat();
+        sendMessage('START_MOCK');
+    }
+
+    function clearChat() {
+        document.getElementById('chat-messages').innerHTML = '';
+    }
+
+    function appendMessage(sender, text) {
+        const container = document.getElementById('chat-messages');
+        const isBot = sender === 'bot';
+        const div = document.createElement('div');
+        div.className = `flex gap-3 ${isBot ? '' : 'justify-end'}`;
+        div.innerHTML = isBot
+            ? `<div class="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center flex-shrink-0 text-sm">🤖</div>
+           <div class="bg-gray-800 rounded-2xl rounded-tl-none px-4 py-3 max-w-lg">
+               <p class="text-gray-300 text-sm whitespace-pre-wrap">${text}</p>
+           </div>`
+            : `<div class="bg-indigo-600 rounded-2xl rounded-tr-none px-4 py-3 max-w-lg">
+               <p class="text-white text-sm">${text}</p>
+           </div>`;
+        container.appendChild(div);
+        container.scrollTop = container.scrollHeight;
+    }
+
+    function appendLoading() {
+        const container = document.getElementById('chat-messages');
+        const div = document.createElement('div');
+        div.id = 'loading-msg';
+        div.className = 'flex gap-3';
+        div.innerHTML = `<div class="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center flex-shrink-0 text-sm">🤖</div>
+        <div class="bg-gray-800 rounded-2xl rounded-tl-none px-4 py-3">
+            <p class="text-gray-400 text-sm">Thinking...</p>
+        </div>`;
+        container.appendChild(div);
+        container.scrollTop = container.scrollHeight;
+    }
+
+    function removeLoading() {
+        const el = document.getElementById('loading-msg');
+        if (el) el.remove();
+    }
+
+    async function sendMessage(override = null) {
+        if (isLoading) return;
+        const input = document.getElementById('chat-input');
+        const message = override || input.value.trim();
+        if (!message) return;
+
+        if (!override) {
+            appendMessage('user', message);
+            input.value = '';
+        }
+
+        chatHistory.push({ role: 'user', content: message === 'START_MOCK' ? 'Start the interview' : message });
+        appendLoading();
+        isLoading = true;
+
+        const role = document.getElementById('role-field').value;
+        const formData = new FormData();
+        formData.append('mode', currentMode);
+        formData.append('message', message === 'START_MOCK' ? 'Start the interview now' : message);
+        formData.append('history', JSON.stringify(chatHistory.slice(-10)));
+        formData.append('role', role);
+        formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+        try {
+            const response = await fetch('/interview/chat/', {
+                method: 'POST',
+                body: formData,
+            });
+            const data = await response.json();
+            removeLoading();
+            appendMessage('bot', data.reply);
+            chatHistory.push({ role: 'assistant', content: data.reply });
+        } catch (err) {
+            removeLoading();
+            appendMessage('bot', 'Something went wrong. Please try again.');
+        }
+        isLoading = false;
+    }
+
+    // Hide role input for QA mode initially
+    document.getElementById('role-input').style.display = 'flex';
+</script>
+{% endblock %}

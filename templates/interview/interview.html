@@ -1,0 +1,138 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <div class="flex justify-between items-center mb-2 flex-wrap gap-3">
+        <h1 class="text-3xl font-bold">🎯 Interview Prep</h1>
+        <a href="/interview/chat/"
+            class="bg-indigo-600 hover:bg-indigo-500 px-5 py-2 rounded-xl text-sm font-semibold transition">
+            🤖 AI Coach Chat →
+        </a>
+    </div>
+    <p class="text-gray-400 mb-8">AI-generated role-specific interview questions with model answers.</p>
+
+    {% if not resume %}
+    <div class="bg-gray-900 border border-yellow-600 rounded-2xl p-8 text-center">
+        <p class="text-4xl mb-3">📄</p>
+        <p class="text-lg font-semibold mb-2">No resume found</p>
+        <p class="text-gray-400 mb-4">Upload your resume first to generate interview questions.</p>
+        <a href="/dashboard/resume/" class="bg-indigo-600 hover:bg-indigo-500 px-6 py-3 rounded-lg transition">
+            Upload Resume →
+        </a>
+    </div>
+
+    {% else %}
+    <!-- Form -->
+    <div class="bg-gray-900 border border-gray-700 rounded-2xl p-6 mb-8">
+        <form method="POST" class="flex gap-4 items-end flex-wrap">
+            {% csrf_token %}
+            <div class="flex-1 min-w-60">
+                <label class="block text-sm text-gray-400 mb-1">Target Role</label>
+                <input type="text" name="target_role" placeholder="e.g. Backend Developer, Data Scientist"
+                    value="{% if prefill_role %}{{ prefill_role }}{% elif last_session %}{{ last_session.target_role }}{% endif %}"
+                    class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-indigo-500">
+            </div>
+            <div class="w-36">
+                <label class="block text-sm text-gray-400 mb-1">Difficulty</label>
+                <select name="difficulty"
+                    class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-indigo-500">
+                    <option value="Easy">Easy</option>
+                    <option value="Medium" selected>Medium</option>
+                    <option value="Hard">Hard</option>
+                </select>
+            </div>
+            <button type="submit"
+                class="bg-indigo-600 hover:bg-indigo-500 px-6 py-3 rounded-lg font-semibold transition whitespace-nowrap">
+                🎯 Generate Questions
+            </button>
+        </form>
+        {% if last_session %}
+        <p class="text-gray-500 text-xs mt-3">Last generated: {{ last_session.generated_at|date:"M d, Y - h:i A" }}</p>
+        {% endif %}
+    </div>
+
+    {% if questions %}
+    <!-- Stats Bar -->
+    <div class="grid grid-cols-4 gap-4 mb-6">
+        <div class="bg-gray-900 border border-gray-800 rounded-xl p-4 text-center">
+            <p class="text-2xl font-bold text-blue-400">{{ questions|length }}</p>
+            <p class="text-gray-500 text-xs mt-1">Total</p>
+        </div>
+        <div class="bg-gray-900 border border-gray-800 rounded-xl p-4 text-center">
+            <p class="text-2xl font-bold text-indigo-400">Tech</p>
+            <p class="text-gray-500 text-xs mt-1">Technical</p>
+        </div>
+        <div class="bg-gray-900 border border-gray-800 rounded-xl p-4 text-center">
+            <p class="text-2xl font-bold text-green-400">DSA</p>
+            <p class="text-gray-500 text-xs mt-1">Coding</p>
+        </div>
+        <div class="bg-gray-900 border border-gray-800 rounded-xl p-4 text-center">
+            <p class="text-2xl font-bold text-yellow-400">HR</p>
+            <p class="text-gray-500 text-xs mt-1">Behavioral</p>
+        </div>
+    </div>
+
+    <!-- Questions -->
+    <div class="space-y-4">
+        {% for q in questions %}
+        <div class="bg-gray-900 border border-gray-800 rounded-2xl p-6 hover:border-indigo-500 transition">
+            <!-- Header -->
+            <div class="flex justify-between items-start mb-4 flex-wrap gap-2">
+                <div class="flex items-center gap-2">
+                    <span class="bg-gray-800 text-gray-400 px-2 py-1 rounded-lg text-xs font-mono">
+                        Q{{ forloop.counter }}
+                    </span>
+                    <span class="px-3 py-1 rounded-full text-xs font-semibold
+                        {% if q.category == 'Technical' %}bg-blue-900 text-blue-300
+                        {% elif q.category == 'DSA' %}bg-green-900 text-green-300
+                        {% elif q.category == 'HR' %}bg-yellow-900 text-yellow-300
+                        {% else %}bg-purple-900 text-purple-300{% endif %}">
+                        {{ q.category }}
+                    </span>
+                    <span class="px-3 py-1 rounded-full text-xs
+                        {% if q.difficulty == 'Easy' %}bg-green-900 text-green-400
+                        {% elif q.difficulty == 'Medium' %}bg-yellow-900 text-yellow-400
+                        {% else %}bg-red-900 text-red-400{% endif %}">
+                        {{ q.difficulty }}
+                    </span>
+                </div>
+            </div>
+
+            <!-- Question -->
+            <h3 class="text-lg font-semibold mb-4 text-white">{{ q.question }}</h3>
+
+            <!-- Answer (collapsible) -->
+            <details class="group">
+                <summary
+                    class="cursor-pointer text-indigo-400 hover:text-indigo-300 text-sm font-semibold mb-3 list-none flex items-center gap-2">
+                    <span>👁 View Model Answer</span>
+                </summary>
+                <div class="mt-3 space-y-3">
+                    <div class="bg-gray-800 rounded-xl p-4">
+                        <p class="text-xs text-gray-500 mb-2">MODEL ANSWER</p>
+                        <p class="text-gray-300 text-sm leading-relaxed">{{ q.answer }}</p>
+                    </div>
+                    <div class="bg-indigo-900 bg-opacity-40 border border-indigo-700 rounded-xl p-4">
+                        <p class="text-xs text-indigo-400 font-semibold mb-1">💡 Interview Tip</p>
+                        <p class="text-gray-300 text-sm">{{ q.tip }}</p>
+                    </div>
+                </div>
+            </details>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Next Step -->
+    <div
+        class="mt-8 bg-gray-900 border border-gray-700 rounded-2xl p-6 flex justify-between items-center flex-wrap gap-4">
+        <div>
+            <p class="font-semibold">Next: Track your applications</p>
+            <p class="text-gray-400 text-sm">Keep track of where you've applied</p>
+        </div>
+        <a href="/tracker/" class="bg-indigo-600 hover:bg-indigo-500 px-6 py-3 rounded-lg transition">
+            📋 Application Tracker →
+        </a>
+    </div>
+    {% endif %}
+    {% endif %}
+</div>
+{% endblock %}
