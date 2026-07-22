@@ -1,0 +1,168 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <h1 class="text-3xl font-bold mb-2">🏆 Placement Readiness Score</h1>
+    <p class="text-gray-400 mb-8">Your overall placement readiness based on resume, skills, and activity.</p>
+
+    <!-- Data Summary Cards -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div class="bg-gray-900 border border-gray-800 rounded-xl p-4 text-center">
+            <p class="text-2xl font-bold text-indigo-400">
+                {% if resume %}{{ resume.score }}{% else %}--{% endif %}
+            </p>
+            <p class="text-gray-500 text-xs mt-1">Resume Score</p>
+        </div>
+        <div class="bg-gray-900 border border-gray-800 rounded-xl p-4 text-center">
+            <p class="text-2xl font-bold text-green-400">
+                {% if skill_analysis %}{{ skill_analysis.overall_readiness }}%{% else %}--{% endif %}
+            </p>
+            <p class="text-gray-500 text-xs mt-1">Skill Readiness</p>
+        </div>
+        <div class="bg-gray-900 border border-gray-800 rounded-xl p-4 text-center">
+            <p class="text-2xl font-bold text-yellow-400">{{ total_apps }}</p>
+            <p class="text-gray-500 text-xs mt-1">Applications</p>
+        </div>
+        <div class="bg-gray-900 border border-gray-800 rounded-xl p-4 text-center">
+            <p class="text-2xl font-bold text-pink-400">{{ interviews }}</p>
+            <p class="text-gray-500 text-xs mt-1">Interviews</p>
+        </div>
+    </div>
+
+    <!-- Generate Button -->
+    <div class="bg-gray-900 border border-gray-700 rounded-2xl p-6 mb-8">
+        <form method="POST" class="flex justify-between items-center flex-wrap gap-4">
+            {% csrf_token %}
+            <div>
+                <p class="font-semibold">Calculate My Placement Score</p>
+                <p class="text-gray-400 text-sm mt-1">AI analyzes all your data and gives a comprehensive score</p>
+                {% if last_score %}
+                <p class="text-gray-500 text-xs mt-1">Last calculated: {{ last_score.generated_at|date:"M d, Y" }}</p>
+                {% endif %}
+            </div>
+            <button type="submit"
+                class="bg-indigo-600 hover:bg-indigo-500 px-6 py-3 rounded-lg font-semibold transition whitespace-nowrap">
+                🏆 Calculate Score
+            </button>
+        </form>
+    </div>
+
+    {% if score_data %}
+
+    <!-- Overall Score -->
+    <div class="bg-gray-900 border border-gray-800 rounded-2xl p-8 mb-6 text-center">
+        <p class="text-gray-400 mb-2">Overall Placement Readiness</p>
+        <p class="text-8xl font-bold mb-2
+            {% if score_data.overall_score >= 75 %}text-green-400
+            {% elif score_data.overall_score >= 50 %}text-yellow-400
+            {% else %}text-red-400
+            {% endif %}">
+            {{ score_data.overall_score }}
+        </p>
+        <p class="text-gray-500 mb-4">out of 100</p>
+        <span class="px-6 py-2 rounded-full text-sm font-semibold
+            {% if score_data.readiness_level == 'Placement Ready' %}bg-green-900 text-green-300
+            {% elif score_data.readiness_level == 'Almost There' %}bg-blue-900 text-blue-300
+            {% elif score_data.readiness_level == 'On Track' %}bg-yellow-900 text-yellow-300
+            {% elif score_data.readiness_level == 'Getting Started' %}bg-orange-900 text-orange-300
+            {% else %}bg-red-900 text-red-300
+            {% endif %}">
+            {{ score_data.readiness_level }}
+        </span>
+        <div class="bg-gray-800 rounded-full h-4 mt-6">
+            <div class="h-4 rounded-full
+                {% if score_data.overall_score >= 75 %}bg-green-500
+                {% elif score_data.overall_score >= 50 %}bg-yellow-500
+                {% else %}bg-red-500
+                {% endif %}" style="width: {{ score_data.overall_score }}%">
+            </div>
+        </div>
+    </div>
+
+    <!-- Score Breakdown -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div class="bg-gray-900 border border-gray-800 rounded-2xl p-5 text-center">
+            <p class="text-gray-400 text-sm mb-2">📄 Resume</p>
+            <p class="text-4xl font-bold text-indigo-400">{{ score_data.resume_score }}</p>
+            <div class="bg-gray-800 rounded-full h-2 mt-3">
+                <div class="h-2 rounded-full bg-indigo-500" style="width: {{ score_data.resume_score }}%"></div>
+            </div>
+        </div>
+        <div class="bg-gray-900 border border-gray-800 rounded-2xl p-5 text-center">
+            <p class="text-gray-400 text-sm mb-2">🧠 Skills</p>
+            <p class="text-4xl font-bold text-green-400">{{ score_data.skills_score }}</p>
+            <div class="bg-gray-800 rounded-full h-2 mt-3">
+                <div class="h-2 rounded-full bg-green-500" style="width: {{ score_data.skills_score }}%"></div>
+            </div>
+        </div>
+        <div class="bg-gray-900 border border-gray-800 rounded-2xl p-5 text-center">
+            <p class="text-gray-400 text-sm mb-2">📋 Activity</p>
+            <p class="text-4xl font-bold text-yellow-400">{{ score_data.activity_score }}</p>
+            <div class="bg-gray-800 rounded-full h-2 mt-3">
+                <div class="h-2 rounded-full bg-yellow-500" style="width: {{ score_data.activity_score }}%"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detailed Breakdown -->
+    <h2 class="text-xl font-semibold mb-4">📊 Detailed Breakdown</h2>
+    <div class="space-y-3 mb-6">
+        {% for item in score_data.breakdown %}
+        <div class="bg-gray-900 border border-gray-800 rounded-2xl p-5">
+            <div class="flex justify-between items-center mb-2 flex-wrap gap-2">
+                <h3 class="font-semibold">{{ item.category }}</h3>
+                <div class="flex items-center gap-3">
+                    <span class="text-sm font-bold
+                        {% if item.status == 'Good' %}text-green-400
+                        {% elif item.status == 'Average' %}text-yellow-400
+                        {% else %}text-red-400
+                        {% endif %}">
+                        {{ item.status }}
+                    </span>
+                    <span class="text-2xl font-bold text-white">{{ item.score }}</span>
+                </div>
+            </div>
+            <div class="bg-gray-800 rounded-full h-2 mb-3">
+                <div class="h-2 rounded-full
+                    {% if item.status == 'Good' %}bg-green-500
+                    {% elif item.status == 'Average' %}bg-yellow-500
+                    {% else %}bg-red-500
+                    {% endif %}" style="width: {{ item.score }}%">
+                </div>
+            </div>
+            <p class="text-gray-400 text-sm">{{ item.comment }}</p>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Action Plan -->
+    <h2 class="text-xl font-semibold mb-4">🎯 Your Action Plan</h2>
+    <div class="space-y-3">
+        {% for action in score_data.action_plan %}
+        <div class="bg-gray-900 border border-gray-800 rounded-2xl p-5 flex gap-4 items-start">
+            <div class="bg-indigo-600 rounded-xl w-10 h-10 flex items-center justify-center flex-shrink-0 font-bold">
+                {{ action.priority }}
+            </div>
+            <div class="flex-1">
+                <div class="flex justify-between items-start flex-wrap gap-2 mb-1">
+                    <p class="font-semibold">{{ action.action }}</p>
+                    <div class="flex gap-2">
+                        <span class="text-xs px-2 py-1 rounded-full
+                            {% if action.impact == 'High' %}bg-red-900 text-red-300
+                            {% elif action.impact == 'Medium' %}bg-yellow-900 text-yellow-300
+                            {% else %}bg-green-900 text-green-300
+                            {% endif %}">
+                            {{ action.impact }} Impact
+                        </span>
+                        <span class="text-xs px-2 py-1 rounded-full bg-gray-800 text-gray-400">
+                            ⏱ {{ action.timeframe }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% endif %}
+</div>
+{% endblock %}

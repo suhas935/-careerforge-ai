@@ -1,4 +1,3 @@
-
 # Create your views here.
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, logout, authenticate
@@ -58,5 +57,18 @@ def logout_view(request):
 
 @login_required
 def dashboard_view(request):
+    from score.models import PlacementScore
+    from tracker.models import Application
+
     profile = Profile.objects.get_or_create(user=request.user)[0]
-    return render(request, "dashboard/dashboard.html", {"profile": profile})
+    latest_score = PlacementScore.objects.filter(user=request.user).last()
+    total_apps = Application.objects.filter(user=request.user).count()
+    return render(
+        request,
+        "dashboard/dashboard.html",
+        {
+            "profile": profile,
+            "latest_score": latest_score,
+            "total_apps": total_apps,
+        },
+    )
