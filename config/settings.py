@@ -1,7 +1,7 @@
 import os
+import dj_database_url
 from pathlib import Path
 from dotenv import load_dotenv
-
 
 load_dotenv()
 
@@ -18,11 +18,9 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    # Third party
     "rest_framework",
     "cloudinary",
     "cloudinary_storage",
-    # Our apps
     "accounts",
     "resume",
     "internships",
@@ -64,7 +62,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "config.wsgi.application"
 
-# Database — SQLite locally, PostgreSQL on Railway later
+# Database
 DATABASE_URL = os.getenv("DATABASE_URL")
 if DATABASE_URL:
     DATABASES = {
@@ -95,13 +93,11 @@ TIME_ZONE = "Asia/Kolkata"
 USE_I18N = True
 USE_TZ = True
 
-# Static files
 STATIC_URL = "/static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
-# Cloudinary (used later for resume PDF uploads)
 DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
 CLOUDINARY_STORAGE = {
     "CLOUD_NAME": os.getenv("CLOUDINARY_CLOUD_NAME"),
@@ -112,29 +108,15 @@ MEDIA_URL = "/media/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# Auth
 LOGIN_URL = "/accounts/login/"
 LOGIN_REDIRECT_URL = "/dashboard/"
 LOGOUT_REDIRECT_URL = "/accounts/login/"
 
-# Claude API
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
 
-# Railway deployment settings
-import dj_database_url
-
-DATABASE_URL = os.getenv("DATABASE_URL")
-if DATABASE_URL:
-    DATABASES["default"] = dj_database_url.config(
-        default=DATABASE_URL,
-        conn_max_age=600,
-    )
-
+# Railway settings
 if os.getenv("RAILWAY_ENVIRONMENT"):
-    ALLOWED_HOSTS += [
-        ".railway.app",
-        ".up.railway.app",
-    ]
+    ALLOWED_HOSTS += [".railway.app", ".up.railway.app"]
     CSRF_TRUSTED_ORIGINS = [
         "https://*.railway.app",
         "https://*.up.railway.app",
