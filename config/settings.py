@@ -2,6 +2,7 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 
+
 load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -64,12 +65,21 @@ TEMPLATES = [
 WSGI_APPLICATION = "config.wsgi.application"
 
 # Database — SQLite locally, PostgreSQL on Railway later
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+DATABASE_URL = os.getenv("DATABASE_URL")
+if DATABASE_URL:
+    DATABASES = {
+        "default": dj_database_url.config(
+            default=DATABASE_URL,
+            conn_max_age=600,
+        )
     }
-}
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -111,13 +121,16 @@ LOGOUT_REDIRECT_URL = "/accounts/login/"
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
 
 # Railway deployment settings
-if os.getenv("RAILWAY_ENVIRONMENT"):
-    import dj_database_url
+import dj_database_url
 
+DATABASE_URL = os.getenv("DATABASE_URL")
+if DATABASE_URL:
     DATABASES["default"] = dj_database_url.config(
-        default=os.getenv("DATABASE_URL"),
+        default=DATABASE_URL,
         conn_max_age=600,
     )
+
+if os.getenv("RAILWAY_ENVIRONMENT"):
     ALLOWED_HOSTS += [
         ".railway.app",
         ".up.railway.app",
