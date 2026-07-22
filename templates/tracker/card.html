@@ -1,0 +1,54 @@
+<div class="bg-gray-800 rounded-xl p-4 border border-gray-700 hover:border-indigo-500 transition">
+    <div class="flex justify-between items-start mb-2">
+        <div>
+            <p class="font-semibold text-sm">{{ app.company }}</p>
+            <p class="text-gray-400 text-xs mt-0.5">{{ app.role }}</p>
+        </div>
+        {% if app.job_url %}
+        <a href="{{ app.job_url }}" target="_blank" class="text-gray-500 hover:text-indigo-400 text-xs p-1">🔗</a>
+        {% endif %}
+    </div>
+
+    {% if app.location %}
+    <p class="text-gray-500 text-xs mb-2">📍 {{ app.location }}</p>
+    {% endif %}
+
+    <p class="text-gray-600 text-xs mb-3">{{ app.applied_date|date:"M d, Y" }}</p>
+
+    {% if app.notes %}
+    <p class="text-gray-400 text-xs mb-3 italic">{{ app.notes|truncatechars:60 }}</p>
+    {% endif %}
+
+    <!-- Status badge -->
+    <div class="mb-2">
+        <span class="text-xs px-2 py-1 rounded-full
+            {% if app.status == 'applied' %}bg-blue-900 text-blue-300
+            {% elif app.status == 'shortlisted' %}bg-purple-900 text-purple-300
+            {% elif app.status == 'interview' %}bg-yellow-900 text-yellow-300
+            {% elif app.status == 'offer' %}bg-green-900 text-green-300
+            {% else %}bg-red-900 text-red-300{% endif %}">
+            {{ app.get_status_display }}
+        </span>
+    </div>
+
+    <!-- Status update -->
+    <form method="POST" action="/tracker/update/{{ app.pk }}/" class="mb-2">
+        {% csrf_token %}
+        <select name="status" onchange="this.form.submit()"
+            class="w-full bg-gray-700 border border-gray-600 rounded-lg px-2 py-1.5 text-xs text-white focus:outline-none">
+            <option value="applied">📤 Applied</option>
+            <option value="shortlisted">⭐ Shortlisted</option>
+            <option value="interview">🎯 Interview</option>
+            <option value="offer">🎉 Offer</option>
+            <option value="rejected">❌ Rejected</option>
+        </select>
+    </form>
+
+    <!-- Delete -->
+    <form method="POST" action="/tracker/delete/{{ app.pk }}/" onsubmit="return confirm('Delete this application?')">
+        {% csrf_token %}
+        <button type="submit" class="text-red-500 hover:text-red-400 text-xs w-full text-center mt-1 transition">
+            🗑 Delete
+        </button>
+    </form>
+</div>

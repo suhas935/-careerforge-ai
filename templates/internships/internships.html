@@ -94,21 +94,34 @@
             </div>
 
             <!-- Platforms -->
-            <div class="flex items-center justify-between flex-wrap gap-3 mt-2">
-                <div class="flex items-center gap-3 flex-wrap">
-                    <p class="text-sm text-gray-400">Apply on:</p>
-                    {% for platform in role.platforms %}
-                    <a href="{{ platform.url }}" target="_blank"
-                        class="bg-indigo-800 hover:bg-indigo-700 border border-indigo-600 text-indigo-200 px-3 py-1 rounded-full text-xs transition flex items-center gap-1">
-                        🔗 {{ platform.name }}
-                    </a>
-                    {% endfor %}
-                </div>
+        <div class="flex items-center justify-between flex-wrap gap-3 mt-2">
+            <div class="flex items-center gap-3 flex-wrap">
+                <p class="text-sm text-gray-400">Apply on:</p>
+                {% for platform in role.platforms %}
+                <a href="{{ platform.url }}" target="_blank"
+                    class="bg-indigo-800 hover:bg-indigo-700 border border-indigo-600 text-indigo-200 px-3 py-1 rounded-full text-xs transition flex items-center gap-1">
+                    🔗 {{ platform.name }}
+                </a>
+                {% endfor %}
+            </div>
+            <div class="flex gap-2 flex-wrap">
                 <a href="/skills/?role={{ role.title }}"
                     class="bg-green-800 hover:bg-green-700 border border-green-600 text-green-200 px-4 py-2 rounded-lg text-xs font-semibold transition">
                     🧠 Check Skill Gap →
                 </a>
+                <!-- Quick Add to Tracker -->
+                <form method="POST" action="/tracker/quick-add/">
+                    {% csrf_token %}
+                    <input type="hidden" name="company" value="{{ role.company_type }}">
+                    <input type="hidden" name="role" value="{{ role.title }}">
+                    <input type="hidden" name="job_url" value="{% if role.platforms %}{{ role.platforms.0.url }}{% endif %}">
+                    <button type="submit"
+                        class="bg-yellow-800 hover:bg-yellow-700 border border-yellow-600 text-yellow-200 px-4 py-2 rounded-lg text-xs font-semibold transition">
+                        ➕ Track This
+                    </button>
+                </form>
             </div>
+        </div>
         </div>
         {% endfor %}
     </div>

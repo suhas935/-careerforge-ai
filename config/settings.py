@@ -109,3 +109,23 @@ LOGOUT_REDIRECT_URL = "/accounts/login/"
 
 # Claude API
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
+
+# Railway deployment settings
+if os.getenv("RAILWAY_ENVIRONMENT"):
+    import dj_database_url
+
+    DATABASES["default"] = dj_database_url.config(
+        default=os.getenv("DATABASE_URL"),
+        conn_max_age=600,
+    )
+    ALLOWED_HOSTS += [
+        ".railway.app",
+        ".up.railway.app",
+    ]
+    CSRF_TRUSTED_ORIGINS = [
+        "https://*.railway.app",
+        "https://*.up.railway.app",
+    ]
+    DEBUG = False
+    SECURE_BROWSER_XSS_FILTER = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True

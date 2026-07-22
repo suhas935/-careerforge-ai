@@ -1,0 +1,209 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="max-w-6xl mx-auto">
+    <div class="flex justify-between items-center mb-6 flex-wrap gap-3">
+        <div>
+            <h1 class="text-3xl font-bold">📋 Application Tracker</h1>
+            <p class="text-gray-400 mt-1">Track all your internship applications in one place.</p>
+        </div>
+        <button onclick="document.getElementById('add-modal').classList.remove('hidden')"
+            class="bg-indigo-600 hover:bg-indigo-500 px-5 py-2 rounded-xl text-sm font-semibold transition">
+            + Add Application
+        </button>
+    </div>
+
+    <!-- Stats -->
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
+        <div class="bg-gray-900 border border-gray-800 rounded-xl p-4 text-center">
+            <p class="text-2xl font-bold text-white">{{ stats.total }}</p>
+            <p class="text-gray-500 text-xs mt-1">Total</p>
+        </div>
+        <div class="bg-gray-900 border border-blue-800 rounded-xl p-4 text-center">
+            <p class="text-2xl font-bold text-blue-400">{{ stats.applied }}</p>
+            <p class="text-gray-500 text-xs mt-1">Applied</p>
+        </div>
+        <div class="bg-gray-900 border border-yellow-800 rounded-xl p-4 text-center">
+            <p class="text-2xl font-bold text-yellow-400">{{ stats.interview }}</p>
+            <p class="text-gray-500 text-xs mt-1">Interview</p>
+        </div>
+        <div class="bg-gray-900 border border-green-800 rounded-xl p-4 text-center">
+            <p class="text-2xl font-bold text-green-400">{{ stats.offer }}</p>
+            <p class="text-gray-500 text-xs mt-1">Offers</p>
+        </div>
+        <div class="bg-gray-900 border border-red-800 rounded-xl p-4 text-center">
+            <p class="text-2xl font-bold text-red-400">{{ stats.rejected }}</p>
+            <p class="text-gray-500 text-xs mt-1">Rejected</p>
+        </div>
+    </div>
+
+    {% if not applications %}
+    <div class="bg-gray-900 border border-gray-700 rounded-2xl p-12 text-center">
+        <p class="text-4xl mb-3">📭</p>
+        <p class="text-lg font-semibold mb-2">No applications yet</p>
+        <p class="text-gray-400 mb-4">Start tracking your internship applications.</p>
+        <button onclick="document.getElementById('add-modal').classList.remove('hidden')"
+            class="bg-indigo-600 hover:bg-indigo-500 px-6 py-3 rounded-lg transition">
+            + Add First Application
+        </button>
+    </div>
+
+    {% else %}
+    <!-- Kanban Board -->
+    <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+
+        {% for status, color, label, emoji in status_columns %}
+        {% endfor %}
+
+        <!-- Applied -->
+        <div class="bg-gray-900 border border-gray-800 rounded-2xl p-4">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="font-semibold text-blue-400">📤 Applied</h3>
+                <span class="bg-blue-900 text-blue-300 text-xs px-2 py-1 rounded-full">{{ stats.applied }}</span>
+            </div>
+            <div class="space-y-3">
+                {% for app in kanban.applied %}
+                {% include 'tracker/card.html' %}
+                {% empty %}
+                <p class="text-gray-600 text-xs text-center py-4">No applications</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Shortlisted -->
+        <div class="bg-gray-900 border border-gray-800 rounded-2xl p-4">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="font-semibold text-purple-400">⭐ Shortlisted</h3>
+                <span class="bg-purple-900 text-purple-300 text-xs px-2 py-1 rounded-full">{{ stats.shortlisted
+                    }}</span>
+            </div>
+            <div class="space-y-3">
+                {% for app in kanban.shortlisted %}
+                {% include 'tracker/card.html' %}
+                {% empty %}
+                <p class="text-gray-600 text-xs text-center py-4">No applications</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Interview -->
+        <div class="bg-gray-900 border border-gray-800 rounded-2xl p-4">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="font-semibold text-yellow-400">🎯 Interview</h3>
+                <span class="bg-yellow-900 text-yellow-300 text-xs px-2 py-1 rounded-full">{{ stats.interview }}</span>
+            </div>
+            <div class="space-y-3">
+                {% for app in kanban.interview %}
+                {% include 'tracker/card.html' %}
+                {% empty %}
+                <p class="text-gray-600 text-xs text-center py-4">No applications</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Offer -->
+        <div class="bg-gray-900 border border-gray-800 rounded-2xl p-4">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="font-semibold text-green-400">🎉 Offer</h3>
+                <span class="bg-green-900 text-green-300 text-xs px-2 py-1 rounded-full">{{ stats.offer }}</span>
+            </div>
+            <div class="space-y-3">
+                {% for app in kanban.offer %}
+                {% include 'tracker/card.html' %}
+                {% empty %}
+                <p class="text-gray-600 text-xs text-center py-4">No applications</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Rejected -->
+        <div class="bg-gray-900 border border-gray-800 rounded-2xl p-4">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="font-semibold text-red-400">❌ Rejected</h3>
+                <span class="bg-red-900 text-red-300 text-xs px-2 py-1 rounded-full">{{ stats.rejected }}</span>
+            </div>
+            <div class="space-y-3">
+                {% for app in kanban.rejected %}
+                {% include 'tracker/card.html' %}
+                {% empty %}
+                <p class="text-gray-600 text-xs text-center py-4">No applications</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Next Step -->
+    <div
+        class="mt-8 bg-gray-900 border border-gray-700 rounded-2xl p-6 flex justify-between items-center flex-wrap gap-4">
+        <div>
+            <p class="font-semibold">Next: Check your placement readiness</p>
+            <p class="text-gray-400 text-sm">Get your overall placement score</p>
+        </div>
+        <a href="/score/" class="bg-indigo-600 hover:bg-indigo-500 px-6 py-3 rounded-lg transition">
+            🏆 Placement Score →
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Add Application Modal -->
+<div id="add-modal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
+    <div class="bg-gray-900 border border-gray-700 rounded-2xl p-8 w-full max-w-lg">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-xl font-bold">Add Application</h2>
+            <button onclick="document.getElementById('add-modal').classList.add('hidden')"
+                class="text-gray-400 hover:text-white text-2xl">×</button>
+        </div>
+        <form method="POST" action="/tracker/add/">
+            {% csrf_token %}
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm text-gray-400 mb-1">Company Name *</label>
+                    <input type="text" name="company" required
+                        class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-sm text-gray-400 mb-1">Role *</label>
+                    <input type="text" name="role" required
+                        class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-sm text-gray-400 mb-1">Location</label>
+                    <input type="text" name="location" placeholder="e.g. Bengaluru, Remote"
+                        class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-sm text-gray-400 mb-1">Job URL</label>
+                    <input type="url" name="job_url" placeholder="https://..."
+                        class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-sm text-gray-400 mb-1">Status</label>
+                    <select name="status"
+                        class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-indigo-500">
+                        <option value="applied">Applied</option>
+                        <option value="shortlisted">Shortlisted</option>
+                        <option value="interview">Interview</option>
+                        <option value="offer">Offer</option>
+                        <option value="rejected">Rejected</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm text-gray-400 mb-1">Notes</label>
+                    <textarea name="notes" rows="2" placeholder="Any notes about this application..."
+                        class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-indigo-500"></textarea>
+                </div>
+            </div>
+            <div class="flex gap-3 mt-6">
+                <button type="submit"
+                    class="flex-1 bg-indigo-600 hover:bg-indigo-500 py-3 rounded-lg font-semibold transition">
+                    Add Application
+                </button>
+                <button type="button" onclick="document.getElementById('add-modal').classList.add('hidden')"
+                    class="flex-1 bg-gray-800 hover:bg-gray-700 py-3 rounded-lg transition">
+                    Cancel
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
